@@ -1,0 +1,250 @@
+{
+	"info": {
+		"_postman_id": "1d1e2d47-7789-4e59-8863-ed810f1292fd",
+		"name": "Paynow API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Payment request",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var uuid = require('uuid');",
+									"pm.globals.set(\"externalId\", uuid.v4());",
+									"var replaced = request.data.replace(/{{(\\w*)}}/g,function(str,key) {return pm.globals.get(key)});",
+									"pm.globals.set(\"signature\",  CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(replaced, pm.environment.get('apiSignatureKey'))));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should make a new payment\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"redirectUrl\", jsonData.redirectUrl);",
+									"    pm.environment.set(\"paymentId\", jsonData.paymentId);",
+									"    pm.environment.set(\"accessToken\", jsonData.redirectUrl.split(\"?token=\")[1]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": \"45671\",\n  \"externalId\": \"{{externalId}}\",\n  \"description\": \"Payment description\",\n  \"buyer\": {\n    \"email\": \"jan.kowalski@melements.pl\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiUrl}}/v1/payments",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v1",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{integratorPublicUrl}}/v1/payments/{{paymentId}}/status",
+							"host": [
+								"{{integratorPublicUrl}}"
+							],
+							"path": [
+								"v1",
+								"payments",
+								"{{paymentId}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment methods",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.sandbox.paynow.pl/v1/payments/paymentmethods",
+							"protocol": "https",
+							"host": [
+								"api",
+								"sandbox",
+								"paynow",
+								"pl"
+							],
+							"path": [
+								"v1",
+								"payments",
+								"paymentmethods"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Refunds",
+			"item": [
+				{
+					"name": "Refund request",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var replaced = request.data.replace(/{{(\\w*)}}/g,function(str,key) {return pm.globals.get(key)});",
+									"pm.globals.set(\"signature\",  CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(replaced, pm.environment.get('apiSignatureKey'))));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should make a new refund\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"refundId\", jsonData.refundId);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							},
+							{
+								"key": "Signature",
+								"value": "{{signature}}",
+								"type": "text"
+							},
+							{
+								"key": "Idempotency-Key",
+								"value": "{{$guid}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 100\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.sandbox.paynow.pl/v1/payments/{{paymentId}}/refunds",
+							"protocol": "https",
+							"host": [
+								"api",
+								"sandbox",
+								"paynow",
+								"pl"
+							],
+							"path": [
+								"v1",
+								"payments",
+								"{{paymentId}}",
+								"refunds"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refund status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.sandbox.paynow.pl/v1/refunds/{{refundId}}/status",
+							"protocol": "https",
+							"host": [
+								"api",
+								"sandbox",
+								"paynow",
+								"pl"
+							],
+							"path": [
+								"v1",
+								"refunds",
+								"{{refundId}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

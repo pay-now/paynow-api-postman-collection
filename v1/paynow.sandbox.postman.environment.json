@@ -1,0 +1,24 @@
+{
+	"id": "2e01e39b-caf6-4b47-86ac-82d3a62dfa29",
+	"name": "Paynow Sandbox",
+	"values": [
+		{
+			"key": "apiUrl",
+			"value": "https://api.sandbox.paynow.pl",
+			"enabled": true
+		},
+		{
+			"key": "apiKey",
+			"value": "97a55694-5478-43b5-b406-fb49ebfdd2b5",
+			"enabled": true
+		},
+		{
+			"key": "apiSignatureKey",
+			"value": "b305b996-bca5-4404-a0b7-2ccea3d2b64b",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2021-06-15T09:41:34.643Z",
+	"_postman_exported_using": "Postman/8.6.2"
+}
