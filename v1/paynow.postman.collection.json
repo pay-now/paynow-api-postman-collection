@@ -60,7 +60,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"amount\": \"45671\",\n  \"externalId\": \"{{externalId}}\",\n  \"description\": \"Payment description\",\n  \"buyer\": {\n    \"email\": \"jan.kowalski@melements.pl\"\n  }\n}",
+							"raw": "{\n    \"amount\": \"45671\",\n    \"externalId\": \"{{externalId}}\",\n    \"description\": \"Payment description\",\n    \"buyer\": {\n        \"email\": \"jan.kowalski@melements.pl\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
