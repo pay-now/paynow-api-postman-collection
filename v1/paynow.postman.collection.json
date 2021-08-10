@@ -118,13 +118,9 @@
 							}
 						],
 						"url": {
-							"raw": "https://api.sandbox.paynow.pl/v1/payments/paymentmethods",
-							"protocol": "https",
+							"raw": "{{apiUrl}}/v1/payments/paymentmethods",
 							"host": [
-								"api",
-								"sandbox",
-								"paynow",
-								"pl"
+								"{{apiUrl}}"
 							],
 							"path": [
 								"v1",
@@ -196,13 +192,9 @@
 							}
 						},
 						"url": {
-							"raw": "https://api.sandbox.paynow.pl/v1/payments/{{paymentId}}/refunds",
-							"protocol": "https",
+							"raw": "{{apiUrl}}/v1/payments/{{paymentId}}/refunds",
 							"host": [
-								"api",
-								"sandbox",
-								"paynow",
-								"pl"
+								"{{apiUrl}}"
 							],
 							"path": [
 								"v1",
@@ -226,13 +218,9 @@
 							}
 						],
 						"url": {
-							"raw": "https://api.sandbox.paynow.pl/v1/refunds/{{refundId}}/status",
-							"protocol": "https",
+							"raw": "{{apiUrl}}/v1/refunds/{{refundId}}/status",
 							"host": [
-								"api",
-								"sandbox",
-								"paynow",
-								"pl"
+								"{{apiUrl}}"
 							],
 							"path": [
 								"v1",
