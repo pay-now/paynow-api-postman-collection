@@ -24,7 +24,7 @@ Make a payment:
 Make a payment [WHITELABEL]:
 
 1. Send `Payment request [WHITELABEL]`. Should return paymentId with PENDING status
-3. Send `Payment status [WHITELABEL]`, to retrieve current payment status. Should be updated to CONFIRMED after some time.
+2. Send `Payment status [WHITELABEL]`, to retrieve current payment status. Should be updated to CONFIRMED after some time.
 
 Make a refund:
 
