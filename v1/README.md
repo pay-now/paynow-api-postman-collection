@@ -21,6 +21,10 @@ Make a payment:
 2. Open returned URL in your web browser and authorize a payment.
 3. Send `Payment status`, to retrieve current payment status
 
+Make a payment [WHITELABEL]:
+
+1. Send `Payment request [WHITELABEL]`. Should return paymentId with PENDING status
+2. Send `Payment status [WHITELABEL]`, to retrieve current payment status. Should be updated to CONFIRMED after some time.
 
 Make a refund:
 
