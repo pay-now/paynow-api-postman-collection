@@ -9,7 +9,7 @@ Collection allows you to create a basic requests in Paynow Sandbox environment.
 
 1. Download collection for Paynow API `paynow.postman.collection.json` and environment variables `paynow.sandbox.postman.environment.json`.
 2. Import them into your Postman application.
-3. Select Sandbox environment
+3. Select `Paynow Sandbox` environment
 
 ## Creating requests
 
@@ -24,7 +24,7 @@ Make a payment:
 Make a payment [WHITELABEL]:
 
 1. Send `Payment request [WHITELABEL]`. Should return paymentId with PENDING status
-2. Send `Payment status [WHITELABEL]`, to retrieve current payment status. Should be updated to CONFIRMED after some time.
+2. Send `Payment status [WHITELABEL]`, to retrieve current payment status. Should be updated to `CONFIRMED` after some time.
 
 Make a refund:
 
