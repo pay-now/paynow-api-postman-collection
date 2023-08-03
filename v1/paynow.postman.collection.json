@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "e4f34c20-92f3-4371-8e8d-5664b3914567",
-		"name": "Paynow API",
+		"_postman_id": "89d64046-aa11-4fba-a93b-3e541247d60d",
+		"name": "Paynow API V1",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -202,7 +202,7 @@
 					"response": []
 				},
 				{
-					"name": "Payment methods [WHITELABEL]",
+					"name": "Payment status [WHITELABEL]",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -213,14 +213,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{apiUrl}}/v2/payments/paymentmethods",
+							"raw": "{{integratorPublicUrl}}/v1/payments/{{paymentId}}/status",
 							"host": [
-								"{{apiUrl}}"
+								"{{integratorPublicUrl}}"
 							],
 							"path": [
-								"v2",
+								"v1",
 								"payments",
-								"paymentmethods"
+								"{{paymentId}}",
+								"status"
 							]
 						}
 					},
