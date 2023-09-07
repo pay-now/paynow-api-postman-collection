@@ -94,7 +94,7 @@
 						"url": {
 							"raw": "{{apiUrl}}/v1/payments/{{paymentId}}/status",
 							"host": [
-								"{{integratorPublicUrl}}"
+								"{{apiUrl}}"
 							],
 							"path": [
 								"v1",
