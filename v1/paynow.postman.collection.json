@@ -92,7 +92,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{integratorPublicUrl}}/v1/payments/{{paymentId}}/status",
+							"raw": "{{apiUrl}}/v1/payments/{{paymentId}}/status",
 							"host": [
 								"{{integratorPublicUrl}}"
 							],
