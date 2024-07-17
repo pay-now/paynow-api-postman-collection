@@ -1,0 +1,667 @@
+{
+	"info": {
+		"_postman_id": "56935ea8-cf14-4509-89ce-aede20eeacfa",
+		"name": "Paynow API V3",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33316453"
+	},
+	"item": [
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Payment request",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
+									"pm.variables.set(\"amount\", utils.random(200, 500000));",
+									"pm.variables.set(\"externalId\", utils.uuid());",
+									"",
+									"var body = pm.request.body.raw.replace(/{{(\\w*)}}/g, function (str, key) { return pm.variables.get(key) });",
+									"var calculatedSignature = utils.signature(body, pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
+									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Should register new payment\", function () {",
+									"    pm.expect(pm.response.json().redirectUrl).not.equal(null);",
+									"    pm.expect(pm.response.json().paymentId).not.equal(null);",
+									"    pm.expect(pm.response.json().status).not.equal(null);",
+									"",
+									"    pm.collectionVariables.set(\"redirectUrl\", pm.response.json().redirectUrl);",
+									"    pm.collectionVariables.set(\"paymentId\", pm.response.json().paymentId);",
+									"    pm.collectionVariables.set(\"accessToken\", pm.response.json().redirectUrl.split(\"?token=\")[1]);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": \"{{amount}}\",\n    \"externalId\": \"{{externalId}}\",\n    \"description\": \"Payment description\",\n    \"buyer\": {\n        \"email\": \"jan.kowalski@melements.pl\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiUrl}}/v3/payments",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Should return payment status details\", function () {",
+									"    pm.expect(pm.response.json().paymentId).not.equal(null);",
+									"    pm.expect(pm.response.json().status).to.eql('NEW');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
+									"var calculatedSignature = utils.signature(\"\", pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
+									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{apiUrl}}/v3/payments/{{paymentId}}/status",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"payments",
+								"{{paymentId}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment methods",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Should return methods with correct order\", function () {",
+									"    pm.expect(pm.response.json()[0].type).to.eql('BLIK');",
+									"    pm.expect(pm.response.json()[1].type).to.eql('PBL');",
+									"    pm.expect(pm.response.json()[2].type).to.eql('CARD');",
+									"});",
+									"",
+									"pm.test(\"Should return mTransfer available\", function () {",
+									"    pm.expect(pm.response.json()[1].paymentMethods[0].id).to.eql(1000);",
+									"    pm.expect(pm.response.json()[1].paymentMethods[0].status).to.eql('ENABLED');",
+									"    pm.collectionVariables.set(\"paymentMethodId\", pm.response.json()[1].paymentMethods[0].id);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
+									"var calculatedSignature = utils.signature(\"\", pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
+									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{apiUrl}}/v3/payments/paymentmethods",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"payments",
+								"paymentmethods"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment request [WHITELABEL]",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
+									"pm.variables.set(\"amount\", utils.random(200, 500000));",
+									"pm.variables.set(\"externalId\", utils.uuid());",
+									"",
+									"var body = pm.request.body.raw.replace(/{{(\\w*)}}/g, function (str, key) { return pm.variables.get(key) });",
+									"var calculatedSignature = utils.signature(body, pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiWhiteLabelSignatureKey'));",
+									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Should register new payment\", function () {",
+									"    pm.expect(pm.response.json().redirectUrl).equal(null);",
+									"    pm.expect(pm.response.json().paymentId).not.equal(null);",
+									"    pm.expect(pm.response.json().status).not.equal(null);",
+									"",
+									"    pm.collectionVariables.unset(\"redirectUrl\");",
+									"    pm.collectionVariables.set(\"whiteLabelPaymentId\", pm.response.json().paymentId);",
+									"    pm.collectionVariables.unset(\"accessToken\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKeyWhiteLabel}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": \"{{amount}}\",\n    \"externalId\": \"{{externalId}}\",\n    \"paymentMethodId\": \"2007\",\n    \"authorizationCode\": \"111111\",\n    \"description\": \"Payment description\",\n    \"buyer\": {\n        \"email\": \"jan.kowalski@melements.pl\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiUrl}}/v3/payments",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"payments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment status [WHITELABEL]",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
+									"var calculatedSignature = utils.signature(\"\", pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiWhiteLabelSignatureKey'));",
+									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Should return payment status details\", function () {",
+									"    pm.expect(pm.response.json().paymentId).not.equal(null);",
+									"    pm.expect(pm.response.json().status).to.eql('CONFIRMED');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKeyWhiteLabel}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{apiUrl}}/v3/payments/{{whiteLabelPaymentId}}/status",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"payments",
+								"{{whiteLabelPaymentId}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Data processing notices [WHITELABEL]",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({key: 'Idempotency-Key', 'value': utils.uuid()});",
+									"",
+									"var calculatedSignature = utils.signature(\"\", pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiWhiteLabelSignatureKey'));",
+									"pm.request.headers.add({key: 'Signature', 'value': calculatedSignature});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKeyWhiteLabel}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{apiUrl}}/v3/payments/dataprocessing/notices?locale=pl-PL",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"payments",
+								"dataprocessing",
+								"notices"
+							],
+							"query": [
+								{
+									"key": "locale",
+									"value": "pl-PL"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Refunds",
+			"item": [
+				{
+					"name": "Refund request",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({key: 'Idempotency-Key', 'value': utils.uuid()});",
+									"",
+									"var body = pm.request.body.raw.replace(/{{(\\w*)}}/g, function (str, key) { return pm.variables.get(key) });",
+									"var calculatedSignature = utils.signature(body, pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
+									"pm.request.headers.add({key: 'Signature', 'value': calculatedSignature});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Should register new refund\", function () {",
+									"    pm.expect(pm.response.json().refundId).not.equal(null);",
+									"    pm.expect(pm.response.json().status).not.equal(null);",
+									"    pm.collectionVariables.set(\"refundId\", pm.response.json().refundId);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 100\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiUrl}}/v3/payments/{{paymentId}}/refunds",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"payments",
+								"{{paymentId}}",
+								"refunds"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refund status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Should return refund status details\", function () {",
+									"    pm.expect(pm.response.json().refundId).not.equal(null);",
+									"    pm.expect(pm.response.json().status).to.eql('PENDING');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
+									"var calculatedSignature = utils.signature(\"\", pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
+									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{apiUrl}}/v3/refunds/{{refundId}}/status",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"refunds",
+								"{{refundId}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel refund",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({key: 'Idempotency-Key', 'value': utils.uuid()});",
+									"",
+									"var calculatedSignature = utils.signature(\"\", pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
+									"pm.request.headers.add({key: 'Signature', 'value': calculatedSignature});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{apiUrl}}/v3/refunds/{{refundId}}/cancel",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"refunds",
+								"{{refundId}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"const crypto = require('crypto-js');",
+					"const lodash = require('lodash');",
+					"const uuid = require('uuid');",
+					"",
+					"utils = {",
+					"    uuid: function () {",
+					"        return uuid.v4();",
+					"    },",
+					"    signature: function (body, headers, queryParams, sigKey) {",
+					"        const sortedHeaders = headers.sort((a, b) => a.key.localeCompare(b.key));",
+					"        const sortedQueryParams = queryParams.sort((a, b) => a.key.localeCompare(b.key));",
+					"",
+					"        const keyValueHeaders = {};",
+					"        Object.keys(sortedHeaders).forEach(function (key, index) {",
+					"            keyValueHeaders[sortedHeaders[key].key] = sortedHeaders[key].value.replace(/{{(\\w*)}}/g, function (str, key) { return pm.environment.get(key) });",
+					"        });",
+					"",
+					"        const keyValueQueryParams = {};",
+					"        Object.keys(sortedQueryParams).forEach(function (key, index) {",
+					"            keyValueQueryParams[sortedQueryParams[key].key] = [sortedQueryParams[key].value];",
+					"        })",
+					"",
+					"        const payload = JSON.stringify({",
+					"            headers: keyValueHeaders,",
+					"            parameters: keyValueQueryParams,",
+					"            body: body != null ? body.replace(/\\t/g,\"\\\\t\").replace(/{{(\\w*)}}/g, function (str, key) { return pm.variables.get(key) }) : {}",
+					"        });",
+					"        ",
+					"        return crypto.enc.Base64.stringify(crypto.HmacSHA256(payload, sigKey))",
+					"    },",
+					"    random: function (min, max) {",
+					"        return lodash.random(min, max);",
+					"    },",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "paymentId",
+			"value": ""
+		},
+		{
+			"key": "paymentMethodId",
+			"value": ""
+		},
+		{
+			"key": "refundId",
+			"value": ""
+		},
+		{
+			"key": "whiteLabelPaymentId",
+			"value": ""
+		},
+		{
+			"key": "redirectUrl",
+			"value": ""
+		},
+		{
+			"key": "accessToken",
+			"value": ""
+		}
+	]
+}
