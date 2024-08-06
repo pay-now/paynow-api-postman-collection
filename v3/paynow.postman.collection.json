@@ -615,7 +615,7 @@
 					"        const payload = JSON.stringify({",
 					"            headers: keyValueHeaders,",
 					"            parameters: keyValueQueryParams,",
-					"            body: body != null ? body.replace(/\\t/g,\"\\\\t\").replace(/{{(\\w*)}}/g, function (str, key) { return pm.variables.get(key) }) : {}",
+					"            body: body != null ? body.replace(/{{(\\w*)}}/g, function (str, key) { return pm.variables.get(key) }) : {}",
 					"        });",
 					"        ",
 					"        return crypto.enc.Base64.stringify(crypto.HmacSHA256(payload, sigKey))",
