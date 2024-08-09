@@ -1,6 +1,6 @@
 # About 
 
-This is a simple Postman collection for Paynow API version 1.
+This is a simple Postman collection for Paynow API V2.
 Collection allows you to create a basic requests in Paynow Sandbox environment.
 
 # How to use
