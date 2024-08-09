@@ -1,4 +1,4 @@
-# About 
+# About
 
 This is a simple Postman collection for Paynow API V1.
 Collection allows you to create a basic requests in Paynow Sandbox environment.
