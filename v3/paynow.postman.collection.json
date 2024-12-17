@@ -1,14 +1,81 @@
 {
 	"info": {
-		"_postman_id": "56935ea8-cf14-4509-89ce-aede20eeacfa",
+		"_postman_id": "653d19b7-3443-492b-815c-1f00d4d92828",
 		"name": "Paynow API V3",
+		"description": "To find API documentation follow the link: [https://docs.paynow.pl/docs/reference/v3/api-reference](https://docs.paynow.pl/docs/reference/v3/api-reference)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "33316453"
 	},
 	"item": [
 		{
-			"name": "Payments",
+			"name": "Payment",
 			"item": [
+				{
+					"name": "Payment methods",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should return correct response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.response.to.be.withBody;",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Should return methods with correct order\", function () {",
+									"    pm.expect(pm.response.json()[0].type).to.eql('BLIK');",
+									"    pm.expect(pm.response.json()[1].type).to.eql('PBL');",
+									"    pm.expect(pm.response.json()[2].type).to.eql('CARD');",
+									"});",
+									"",
+									"pm.test(\"Should return mTransfer available\", function () {",
+									"    pm.expect(pm.response.json()[1].paymentMethods[0].id).to.eql(1000);",
+									"    pm.expect(pm.response.json()[1].paymentMethods[0].status).to.eql('ENABLED');",
+									"    pm.collectionVariables.set(\"paymentMethodId\", pm.response.json()[1].paymentMethods[0].id);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
+									"var calculatedSignature = utils.signature(\"\", pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
+									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{apiUrl}}/v3/payments/paymentmethods",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"payments",
+								"paymentmethods"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "Payment request",
 					"event": [
@@ -138,72 +205,6 @@
 								"payments",
 								"{{paymentId}}",
 								"status"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Payment methods",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Should return correct response\", function () {",
-									"    pm.response.to.have.status(200);",
-									"    pm.response.to.be.withBody;",
-									"    pm.response.to.be.json;",
-									"});",
-									"",
-									"pm.test(\"Should return methods with correct order\", function () {",
-									"    pm.expect(pm.response.json()[0].type).to.eql('BLIK');",
-									"    pm.expect(pm.response.json()[1].type).to.eql('PBL');",
-									"    pm.expect(pm.response.json()[2].type).to.eql('CARD');",
-									"});",
-									"",
-									"pm.test(\"Should return mTransfer available\", function () {",
-									"    pm.expect(pm.response.json()[1].paymentMethods[0].id).to.eql(1000);",
-									"    pm.expect(pm.response.json()[1].paymentMethods[0].status).to.eql('ENABLED');",
-									"    pm.collectionVariables.set(\"paymentMethodId\", pm.response.json()[1].paymentMethods[0].id);",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
-									"var calculatedSignature = utils.signature(\"\", pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
-									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Api-Key",
-								"value": "{{apiKey}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{apiUrl}}/v3/payments/paymentmethods",
-							"host": [
-								"{{apiUrl}}"
-							],
-							"path": [
-								"v3",
-								"payments",
-								"paymentmethods"
 							]
 						}
 					},
@@ -393,7 +394,7 @@
 			]
 		},
 		{
-			"name": "Refunds",
+			"name": "Refund",
 			"item": [
 				{
 					"name": "Refund request",
@@ -577,6 +578,73 @@
 								"cancel"
 							]
 						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Configuration",
+			"item": [
+				{
+					"name": "Shop URLs",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.request.headers.add({ key: 'Idempotency-Key', 'value': utils.uuid() });",
+									"var calculatedSignature = utils.signature(pm.request.body.raw, pm.request.headers.all(), pm.request.url.query.all(), pm.environment.get('apiSignatureKey'));",
+									"pm.request.headers.add({ key: 'Signature', 'value': calculatedSignature });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should accept urls configuration update\", function () {",
+									"    pm.response.to.have.status(204);",
+									"    pm.response.to.not.have;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"notificationUrl\": \"https://example.com/notifications\",\n\t\"continueUrl\": \"https://example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiUrl}}/v3/configuration/shop/urls",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v3",
+								"configuration",
+								"shop",
+								"urls"
+							]
+						},
+						"description": "update notificttion and continue URL"
 					},
 					"response": []
 				}
