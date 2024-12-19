@@ -1,12 +1,14 @@
 {
 	"info": {
-		"_postman_id": "89d64046-aa11-4fba-a93b-3e541247d60d",
+		"_postman_id": "6fadad3e-d8d7-4188-b8ae-9767f22dd0a5",
 		"name": "Paynow API V1",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"description": "To find API documentation follow the link: [https://docs.paynow.pl/docs/reference/v1/api-reference](https://docs.paynow.pl/docs/reference/v1/api-reference)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33316453"
 	},
 	"item": [
 		{
-			"name": "Payments",
+			"name": "Payment",
 			"item": [
 				{
 					"name": "Payment request",
@@ -262,7 +264,7 @@
 			]
 		},
 		{
-			"name": "Refunds",
+			"name": "Refund",
 			"item": [
 				{
 					"name": "Refund request",
@@ -357,6 +359,75 @@
 								"status"
 							]
 						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Configuration",
+			"item": [
+				{
+					"name": "Shop URLs",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.globals.set(\"signature\",  CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(pm.request.body.raw, pm.environment.get('apiSignatureKey'))));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Should accept urls configuration update\", function () {",
+									"    pm.response.to.have.status(204);",
+									"    pm.response.to.not.have;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Api-Key",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Signature",
+								"value": "{{signature}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"notificationUrl\": \"https://example.com/notifications\",\n\t\"continueUrl\": \"https://example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiUrl}}/v1/configuration/shop/urls",
+							"host": [
+								"{{apiUrl}}"
+							],
+							"path": [
+								"v1",
+								"configuration",
+								"shop",
+								"urls"
+							]
+						},
+						"description": "update notificttion and continue URL"
 					},
 					"response": []
 				}
